@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân Tích Truyền Thông Công Nghiệp & OSI Trong Nhà Máy Điện</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Industrial Blue & Neutral Gray -->
+    <!-- Application Structure Plan: Một ứng dụng trang đơn với thanh điều hướng ở trên cùng để chuyển giữa các phần chuyên đề (Tổng quan, Truyền thông Công nghiệp, Mô hình OSI, Ví dụ thực tế). Cốt lõi là một sơ đồ dọc tương tác của các lớp OSI được xây dựng bằng HTML/CSS. Nhấp vào một lớp sẽ làm nổi bật nó và hiển thị chi tiết chức năng cùng với một ví dụ cụ thể trong nhà máy điện. Một lưu đồ tương tác cuối cùng sẽ theo dõi một lệnh thực tế (ví dụ: đóng một van) qua mạng, minh họa mô hình OSI trong thực tế. Cấu trúc này được chọn để hướng dẫn người dùng từ các khái niệm chung đến một ứng dụng thực tế, cụ thể, hiệu quả hơn cho việc học so với một tài liệu tĩnh. -->
+    <!-- Visualization & Content Choices: Thông tin báo cáo: Mô hình OSI -> Mục tiêu: Giải thích các lớp -> Phương pháp trình bày: Sơ đồ dọc HTML/CSS tương tác -> Tương tác: Nhấp vào lớp sẽ làm nổi bật và hiển thị chi tiết trong một bảng điều khiển bên cạnh -> Lý do: Khuyến khích khám phá tích cực và kết nối các lớp trừu tượng với các ví dụ cụ thể. Thông tin báo cáo: Lệnh luồng dữ liệu -> Mục tiêu: Tổng hợp kiến thức -> Phương pháp trình bày: Lưu đồ từng bước bằng HTML/CSS -> Tương tác: Nhấp vào bước sẽ hiển thị giải thích -> Lý do: Trình bày toàn bộ quá trình một cách năng động, củng cố vai trò của các lớp khác nhau trong một giao dịch hoàn chỉnh. Thư viện/Phương pháp: Vanilla JS cho tất cả các tương tác. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .section-active {
+            font-weight: 700;
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .osi-layer {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 5px solid #9ca3af;
+        }
+        .osi-layer.active, .osi-layer:hover {
+            background-color: #eff6ff;
+            border-left-color: #2563eb;
+            transform: translateX(5px);
+        }
+        .content-card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s;
+        }
+        .content-card:hover {
+            transform: translateY(-5px);
+        }
+        .flow-step {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .flow-step.active, .flow-step:hover {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+        .flow-arrow {
+            font-size: 2rem;
+            line-height: 1;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-slate-800">C&I Trong Nhà Máy Nhiệt Điện</h1>
+            <nav id="navbar" class="hidden md:flex space-x-6 text-slate-600">
+                <a data-target="overview" class="nav-link pb-1 section-active">Tổng Quan</a>
+                <a data-target="industrial-comm" class="nav-link pb-1">Truyền Thông Công Nghiệp</a>
+                <a data-target="osi-model" class="nav-link pb-1">Mô Hình OSI</a>
+                <a data-target="real-example" class="nav-link pb-1">Ví Dụ Thực Tế</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+        
+        <section id="overview" class="mb-16 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-blue-700 mb-4">Góc Nhìn Từ Phòng Điều Khiển Trung Tâm</h2>
+            <p class="text-lg text-slate-700 leading-relaxed mb-6">
+                Với vai trò là một kỹ sư C&I, tôi xem hệ thống truyền thông công nghiệp như hệ thần kinh của nhà máy. Trong một tổ máy nhiệt điện siêu tới hạn 600MW, chúng ta đang quản lý hơn 10,000 điểm tín hiệu (I/O) - từ nhiệt độ, áp suất, lưu lượng của lò hơi, turbine, đến các van, động cơ, và hệ thống phân tích. Mỗi tín hiệu này cần được truyền đi và nhận về một cách chính xác, tin cậy với tốc độ mili giây. Bất kỳ sự chậm trễ hay sai sót nào cũng có thể dẫn đến giảm hiệu suất, hoặc tệ hơn là gây sự cố nghiêm trọng cho thiết bị trị giá hàng trăm triệu đô la.
+            </p>
+            <div class="grid md:grid-cols-3 gap-6 text-center">
+                <div class="content-card p-6">
+                    <h3 class="text-4xl font-bold text-blue-600">10,000+</h3>
+                    <p class="text-slate-600 mt-2">Điểm Tín Hiệu (I/O)</p>
+                </div>
+                <div class="content-card p-6">
+                    <h3 class="text-4xl font-bold text-blue-600">&lt;100ms</h3>
+                    <p class="text-slate-600 mt-2">Thời gian đáp ứng vòng lặp điều khiển</p>
+                </div>
+                <div class="content-card p-6">
+                    <h3 class="text-4xl font-bold text-blue-600">99.999%</h3>
+                    <p class="text-slate-600 mt-2">Độ tin cậy và sẵn sàng của hệ thống</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="industrial-comm" class="mb-16 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-blue-700 mb-4">Truyền Thông Công Nghiệp: Không Chỉ Là "Kết Nối"</h2>
+            <p class="text-lg text-slate-700 leading-relaxed mb-6">
+                Khác với mạng IT văn phòng, mạng công nghiệp trong nhà máy phải hoạt động trong môi trường cực kỳ khắc nghiệt: nhiễu điện từ từ động cơ cao thế, nhiệt độ cao gần lò hơi, độ rung lớn gần turbine. Vì vậy, các giao thức và thiết bị được thiết kế đặc biệt, ưu tiên sự Bền Bỉ, Tính Thời Gian Thực và An Toàn.
+            </p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="content-card p-6">
+                    <h3 class="font-bold text-xl mb-2 text-slate-800">PROFIBUS-DP/PA</h3>
+                    <p class="text-slate-600">"Con ngựa thồ" của hệ thống. Chúng tôi dùng PROFIBUS-DP (Decentralized Periphery) cho các trạm I/O phân tán, kết nối hàng nghìn cảm biến và cơ cấu chấp hành với tốc độ cao. PROFIBUS-PA (Process Automation) được dùng cho các thiết bị đo lường thông minh trong khu vực nguy hiểm cháy nổ, cấp nguồn và truyền dữ liệu trên cùng một đôi dây.</p>
+                </div>
+                <div class="content-card p-6">
+                    <h3 class="font-bold text-xl mb-2 text-slate-800">MODBUS RTU/TCP</h3>
+                    <p class="text-slate-600">Giao thức đơn giản, phổ biến và đáng tin cậy. Thường được sử dụng để tích hợp các hệ thống phụ của bên thứ ba vào DCS (Hệ thống điều khiển phân tán), ví dụ như hệ thống phân tích khói thải, hệ thống giám sát độ rung turbine.</p>
+                </div>
+                <div class="content-card p-6">
+                    <h3 class="font-bold text-xl mb-2 text-slate-800">FOUNDATION FIELDBUS</h3>
+                    <p class="text-slate-600">Giao thức mạnh mẽ cho điều khiển quá trình. Nó cho phép các thiết bị thông minh (van, cảm biến) tự thực hiện các vòng lặp điều khiển ngay tại hiện trường, giảm tải cho bộ điều khiển trung tâm và tăng độ tin cậy. Rất hữu ích trong các vòng điều khiển quan trọng.</p>
+                </div>
+                <div class="content-card p-6">
+                    <h3 class="font-bold text-xl mb-2 text-slate-800">INDUSTRIAL ETHERNET</h3>
+                    <p class="text-slate-600">Xương sống của hệ thống, kết nối các bộ điều khiển, máy chủ và trạm vận hành. Đây không phải là Ethernet thông thường, mà được gia cố về phần cứng và sử dụng các giao thức như PROFINET để đảm bảo tính thời gian thực và độ tin cậy.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="osi-model" class="mb-16 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-blue-700 mb-4">Mô Hình OSI: "Giải Phẫu" Một Gói Tin</h2>
+             <p class="text-lg text-slate-700 leading-relaxed mb-6">
+                Mô hình OSI (Open Systems Interconnection) là một cách tuyệt vời để "bóc tách" quá trình truyền thông phức tạp thành 7 lớp chức năng riêng biệt. Trong nhà máy, việc hiểu rõ từng lớp giúp chúng tôi chẩn đoán sự cố nhanh chóng. Hãy nhấp vào từng lớp để xem ví dụ thực tế tại nhà máy.
+            </p>
+            <div class="flex flex-col md:flex-row gap-8">
+                <div id="osi-layers" class="w-full md:w-1/3 flex flex-col gap-2">
+                    <div data-layer="7" class="osi-layer p-4 rounded-r-lg active">
+                        <p class="font-bold text-lg">7. Application (Ứng dụng)</p>
+                        <p class="text-sm text-slate-500">Giao diện với người dùng và ứng dụng</p>
+                    </div>
+                    <div data-layer="6" class="osi-layer p-4 rounded-r-lg">
+                        <p class="font-bold text-lg">6. Presentation (Trình bày)</p>
+                        <p class="text-sm text-slate-500">Định dạng, mã hóa và nén dữ liệu</p>
+                    </div>
+                    <div data-layer="5" class="osi-layer p-4 rounded-r-lg">
+                        <p class="font-bold text-lg">5. Session (Phiên)</p>
+                        <p class="text-sm text-slate-500">Quản lý và duy trì các phiên kết nối</p>
+                    </div>
+                    <div data-layer="4" class="osi-layer p-4 rounded-r-lg">
+                        <p class="font-bold text-lg">4. Transport (Vận chuyển)</p>
+                        <p class="text-sm text-slate-500">Đảm bảo truyền dữ liệu đầu cuối</p>
+                    </div>
+                    <div data-layer="3" class="osi-layer p-4 rounded-r-lg">
+                        <p class="font-bold text-lg">3. Network (Mạng)</p>
+                        <p class="text-sm text-slate-500">Định tuyến và địa chỉ logic (IP)</p>
+                    </div>
+                    <div data-layer="2" class="osi-layer p-4 rounded-r-lg">
+                        <p class="font-bold text-lg">2. Data Link (Liên kết dữ liệu)</p>
+                        <p class="text-sm text-slate-500">Địa chỉ vật lý (MAC) và kiểm soát lỗi</p>
+                    </div>
+                    <div data-layer="1" class="osi-layer p-4 rounded-r-lg">
+                        <p class="font-bold text-lg">1. Physical (Vật lý)</p>
+                        <p class="text-sm text-slate-500">Truyền tín hiệu qua phương tiện vật lý</p>
+                    </div>
+                </div>
+                <div class="w-full md:w-2/3 content-card">
+                    <div id="osi-details" class="p-8 min-h-[300px]">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="real-example" class="scroll-mt-24">
+            <h2 class="text-3xl font-bold text-blue-700 mb-4">Ví Dụ Thực Tế: Ra Lệnh Đóng Van Hơi Chính</h2>
+            <p class="text-lg text-slate-700 leading-relaxed mb-6">
+                Hãy cùng theo dõi hành trình của một lệnh điều khiển, từ lúc kỹ sư vận hành nhấn nút trên màn hình HMI (Giao diện Người-Máy) trong phòng điều khiển trung tâm, cho đến khi van hơi chính ngoài hiện trường thực sự đóng lại. Đây là một chuỗi hoạt động cực kỳ quan trọng, đòi hỏi sự phối hợp hoàn hảo của tất cả các lớp truyền thông. Nhấp vào từng bước để xem chi tiết.
+            </p>
+            <div class="flex flex-col items-center gap-2">
+                <div id="flow-steps-container" class="w-full max-w-4xl space-y-2">
+                    <div data-step="1" class="flow-step p-4 border-2 border-slate-300 rounded-lg text-center active">
+                        <span class="font-bold text-blue-600">Bước 1:</span> Kỹ sư vận hành nhấn nút "ĐÓNG VAN" trên màn hình HMI.
+                    </div>
+                    <div class="flow-arrow text-center">↓</div>
+                    <div data-step="2" class="flow-step p-4 border-2 border-slate-300 rounded-lg text-center">
+                        <span class="font-bold text-blue-600">Bước 2:</span> Phần mềm DCS tạo lệnh điều khiển.
+                    </div>
+                     <div class="flow-arrow text-center">↓</div>
+                    <div data-step="3" class="flow-step p-4 border-2 border-slate-300 rounded-lg text-center">
+                        <span class="font-bold text-blue-600">Bước 3:</span> Gói tin được gửi qua mạng Industrial Ethernet.
+                    </div>
+                     <div class="flow-arrow text-center">↓</div>
+                    <div data-step="4" class="flow-step p-4 border-2 border-slate-300 rounded-lg text-center">
+                        <span class="font-bold text-blue-600">Bước 4:</span> Bộ điều khiển xử lý lệnh và gửi xuống mạng cấp trường.
+                    </div>
+                     <div class="flow-arrow text-center">↓</div>
+                    <div data-step="5" class="flow-step p-4 border-2 border-slate-300 rounded-lg text-center">
+                        <span class="font-bold text-blue-600">Bước 5:</span> Tín hiệu đến bộ định vị (Positioner) của van.
+                    </div>
+                     <div class="flow-arrow text-center">↓</div>
+                    <div data-step="6" class="flow-step p-4 border-2 border-slate-300 rounded-lg text-center">
+                        <span class="font-bold text-blue-600">Bước 6:</span> Van đóng và gửi tín hiệu phản hồi.
+                    </div>
+                </div>
+                <div class="w-full max-w-4xl mt-8 content-card">
+                    <div id="flow-details" class="p-8 min-h-[150px]">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-white mt-16 py-6">
+        <div class="container mx-auto px-6 text-center">
+            <p>Chia sẻ bởi một chuyên gia C&I với 10 năm kinh nghiệm.</p>
+            <p class="text-sm text-slate-400 mt-2">Giao diện được thiết kế để trực quan hóa các khái niệm kỹ thuật phức tạp.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const osiDetailsContainer = document.getElementById('osi-details');
+            const osiLayers = document.querySelectorAll('.osi-layer');
+
+            const osiData = {
+                '7': {
+                    title: 'Lớp 7: Application (Ứng dụng)',
+                    content: 'Đây là lớp gần gũi nhất với người vận hành. Trên màn hình DCS, khi họ thấy giá trị áp suất lò hơi là 250 bar, đó chính là lớp ứng dụng đang hoạt động. Nó lấy dữ liệu thô và trình bày dưới dạng con số, đồ thị, biểu đồ mà con người có thể hiểu được. Giao thức ở lớp này quy định cách dữ liệu được định dạng cho ứng dụng cụ thể, ví dụ như quy ước dữ liệu nhiệt độ sẽ là một số thực 32-bit.'
+                },
+                '6': {
+                    title: 'Lớp 6: Presentation (Trình bày)',
+                    content: 'Lớp này hoạt động như một "phiên dịch viên". Dữ liệu từ các thiết bị khác nhau có thể có định dạng khác nhau (ví dụ Big-endian vs Little-endian). Lớp trình bày sẽ chuyển đổi chúng về một định dạng chung mà hệ thống DCS có thể hiểu được. Nó cũng có thể thực hiện mã hóa hoặc nén dữ liệu để truyền đi hiệu quả hơn, dù trong mạng công nghiệp chúng ta thường ưu tiên tốc độ hơn là nén.'
+                },
+                '5': {
+                    title: 'Lớp 5: Session (Phiên)',
+                    content: 'Lớp này chịu trách nhiệm thiết lập, quản lý và kết thúc các "cuộc hội thoại" giữa hai thiết bị. Ví dụ, khi một kỹ sư kết nối laptop vào mạng để cấu hình một bộ điều khiển, lớp Session sẽ đảm bảo kết nối này được duy trì ổn định trong suốt quá trình làm việc và được đóng lại một cách chính xác khi hoàn tất, tránh để lại các kết nối "mồ côi" gây lãng phí tài nguyên.'
+                },
+                '4': {
+                    title: 'Lớp 4: Transport (Vận chuyển)',
+                    content: 'Đây là lớp đảm bảo chất lượng truyền tin. Trong mạng điều khiển, chúng tôi thường dùng UDP cho các dữ liệu cập nhật liên tục (như nhiệt độ) vì tốc độ là ưu tiên hàng đầu, mất một vài gói tin không quá nghiêm trọng. Nhưng với các lệnh điều khiển quan trọng (như lệnh trip turbine), chúng tôi sẽ dùng TCP để đảm bảo gói tin được gửi đến nơi một cách toàn vẹn, có xác nhận và đúng thứ tự.'
+                },
+                '3': {
+                    title: 'Lớp 3: Network (Mạng)',
+                    content: 'Lớp này giống như hệ thống bưu điện của nhà máy. Mỗi bộ điều khiển, máy chủ đều có một địa chỉ IP duy nhất. Khi trạm vận hành A (ví dụ 192.168.1.10) muốn gửi lệnh đến bộ điều khiển B (192.168.2.20), lớp Network sẽ sử dụng các router để tìm ra con đường tốt nhất để gói tin đi từ mạng này sang mạng khác, đảm bảo gói tin đến đúng "nhà".'
+                },
+                '2': {
+                    title: 'Lớp 2: Data Link (Liên kết dữ liệu)',
+                    content: 'Nếu lớp Network tìm đúng "nhà", thì lớp Data Link sẽ tìm đúng "phòng" trong nhà đó. Nó sử dụng địa chỉ MAC (giống như số Căn cước công dân của card mạng) để gửi dữ liệu trực tiếp giữa hai thiết bị trong cùng một mạng LAN. Ví dụ, trong mạng Profibus, đây là lớp quản lý cơ chế Master-Slave, đảm bảo tại một thời điểm chỉ có một thiết bị được phép "nói" để tránh xung đột dữ liệu.'
+                },
+                '1': {
+                    title: 'Lớp 1: Physical (Vật lý)',
+                    content: 'Đây là nền tảng của mọi thứ. Nó định nghĩa tất cả những gì chúng ta có thể chạm vào: cáp đồng (ví dụ cáp xoắn đôi có vỏ bọc chống nhiễu cho Profibus), cáp quang (dùng cho các khoảng cách xa giữa các tòa nhà, miễn nhiễm với nhiễu điện từ), các đầu nối (RJ45, M12), điện áp của tín hiệu (RS-485), v.v. Một đầu nối bị lỏng hay một sợi cáp bị nhiễu tại lớp này sẽ làm tê liệt toàn bộ giao tiếp ở các lớp trên.'
+                }
+            };
+            
+            function updateOsiDetails(layer) {
+                const data = osiData[layer];
+                if (data) {
+                    osiDetailsContainer.innerHTML = `
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4">${data.title}</h3>
+                        <p class="text-slate-600 leading-relaxed">${data.content}</p>
+                    `;
+                }
+            }
+
+            osiLayers.forEach(layerEl => {
+                layerEl.addEventListener('click', () => {
+                    osiLayers.forEach(l => l.classList.remove('active'));
+                    layerEl.classList.add('active');
+                    const layer = layerEl.getAttribute('data-layer');
+                    updateOsiDetails(layer);
+                });
+            });
+
+            updateOsiDetails('7');
+
+            const flowDetailsContainer = document.getElementById('flow-details');
+            const flowSteps = document.querySelectorAll('.flow-step');
+            
+            const flowData = {
+                '1': {
+                    title: 'Hành động của người vận hành',
+                    content: 'Tại phòng điều khiển, kỹ sư nhấp vào biểu tượng van trên giao diện đồ họa. Hành động này được ghi nhận bởi phần mềm HMI. <br><b>Lớp OSI liên quan: Lớp 7 (Application)</b> - Giao diện người dùng đồ họa
